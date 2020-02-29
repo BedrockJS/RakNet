@@ -1,8 +1,22 @@
 import { Address } from '../Types';
+import BinaryStream from './BinaryStream';
 import ConnectionHandler from '../Handlers/ConnectionHandler';
+import ACK from '../packets/ack/ACK';
+import NAK from '../packets/ack/NAK';
+import Datagram from '../packets/ack/Datagram';
+import Packet from '../packets/Packet';
+import EncapsulatedPacket from '../packets/ack/EncapsulatedPacket';
+/*
+import Server from '@/Server';
+import Player from '@/Player';
+*/
 
 class Connection {
-    /** 50 is to properly handle 20 ticks per second. */
+    /** 
+     * @description 50 is to properly handle 20 ticks per second.
+     * Reason: 1000 is 20 full ticks (in ms), divide this by 20 (which is 20 ticks per second),
+     * gives us 50, so to properly tick 20 times in a second, we need to tick every 50 MS
+     */
     private static TICK = 50;
 
     private tick_interval = null;

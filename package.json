@@ -1,0 +1,32 @@
+{
+  "name": "raknet",
+  "version": "1.0.0",
+  "description": "A raknet library made in TS for Bedrock.JS",
+  "main": "lib/RakNet.js",
+  "dependencies": {
+    "bedrock.js": "1.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^13.7.4",
+    "typescript": "^3.8.2"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "publish": ""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BedrockJS/RakNet.git"
+  },
+  "keywords": [
+    "RakNet",
+    "Minecraft",
+    "MCPE"
+  ],
+  "author": "Bedrock.js",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/BedrockJS/RakNet/issues"
+  },
+  "homepage": "https://github.com/BedrockJS/RakNet#readme"
+}

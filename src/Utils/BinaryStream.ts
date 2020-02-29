@@ -1,5 +1,5 @@
 import Address, { AddressFamily, Gamerule, GameruleType } from '@/interfaces/Interfaces'
-import { Magic } from '@/network/raknet/Protocol';
+import { Magic } from '../network/Protocol';
 import { Round } from '@/utils';
 import Logger from '@/utils/Logger';
 import { Vector3 } from 'math3d';

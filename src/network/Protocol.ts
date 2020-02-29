@@ -2,6 +2,7 @@ enum Protocol {
     /* Versions */
     CURRENT_PROTOCOL = 389,
     PROTOCOL_VERSION = 9,
+    SYSTEM_ADDRESSES = 10,
     /** Query and Raknet */
     CONNECTED_PING = 0x00,
     UNCONNECTED_PING = 0x01,
@@ -165,5 +166,9 @@ enum Protocol {
     NETWORK_SETTINGS = 0x8f,
     PLAYER_AUTH_INPUT = 0x90
 }
+
+export const VERSION_STRING = '1.14.0';
+export const SERVER_ID: number = Math.floor(Math.random() * 99999);
+export const Magic = '\x00\xff\xff\x00\xfe\xfe\xfe\xfe\xfd\xfd\xfd\xfd\x12\x34\x56\x78';
 
 export default Protocol;

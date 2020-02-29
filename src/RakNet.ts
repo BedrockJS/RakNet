@@ -2,7 +2,7 @@ import ConnectionHandler from './Handlers/ConnectionHandler';
 import BinaryStream from './Utils/BinaryStream';
 import * as dgram from 'dgram';
 import Connection from './Utils/Connection';
-import { Address } from './Types';
+import Address from './Types';
 import { EventEmitter } from 'events';
 
 
@@ -65,6 +65,8 @@ class RakNet extends EventEmitter {
             return;
         } else {
             const connection: Connection = this.connectionHandler.getConnection(address);
+            connection.handleStream(stream);
+            return;
         }
     }
 }
