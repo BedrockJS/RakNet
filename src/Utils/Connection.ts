@@ -1,15 +1,13 @@
-import { Address } from '../Types';
+import Address from '../Types';
 import BinaryStream from './BinaryStream';
 import ConnectionHandler from '../Handlers/ConnectionHandler';
-import ACK from '../packets/ack/ACK';
-import NAK from '../packets/ack/NAK';
-import Datagram from '../packets/ack/Datagram';
-import Packet from '../packets/Packet';
-import EncapsulatedPacket from '../packets/ack/EncapsulatedPacket';
-/*
+import ACKQueue from '../protocol/ack/ACKQueue';
+import NAKQueue from '../protocol/ack/NAKQueue';
+import { ACK } from '../protocol/PacketRegistrar';
 import Server from '@/Server';
 import Player from '@/Player';
-*/
+import Packet from '../protocol/Packet';
+import Datagram from '../protocol/ack/Datagram';
 
 class Connection {
     /** 
@@ -35,8 +33,8 @@ class Connection {
 
     public channelIndex: number[] = [];
 
-    public ACKQueue: ACK = new ACK();
-    public NAKQueue: NAK = new NAK();
+    public ACKQueue: ACKQueue = new ACKQueue();
+    public NAKQueue: NAKQueue = new NAKQueue();
 
     public datagramQueue: Datagram[] = [];
     public packetQueue: Datagram = new Datagram();
@@ -101,9 +99,11 @@ class Connection {
     public handlePacket(packet: Packet) {
         this.lastUpdate = Date.now();
 
-        if (packet instanceof EncapsulatedPacket) return this.handleEncapsulatedPacket(packet);
+        if (packet instanceof EncapsulatedPacket) {
+            return this.handleEncapsulatedPacket(packet);
+        }
 
-        if (packet instanceof ACK) {
+        if (packet instanceof ACKQueue) {
             this.logger.debug('Got ACK:', packet.ids);
             packet.ids.forEach(id => {
                 const pk = this.recoveryQueue.get(id);
@@ -113,7 +113,7 @@ class Connection {
             })
         }
 
-        if (packet instanceof NAK) {
+        if (packet instanceof NAKQueue) {
             this.logger.debug('Got NAK:', packet.ids)
             packet.ids.forEach(id => {
                 const pk = this.recoveryQueue.get(id);
@@ -125,7 +125,7 @@ class Connection {
         }
     }
 
-    public queueEncapsulatedPacket(packet: EncapsulatedPacket, immediate: boolean = false) {
+    public queueEncapsulatedPacket(packet: ACK.EncapsulatedPacket, immediate: boolean = false) {
         if (packet.isReliable()) {
             packet.messageIndex = this.messageIndex++;
         }
@@ -146,7 +146,7 @@ class Connection {
                     packet.getStream().offset,
                     packet.getStream().offset += maxSize,
                 ))
-                const pk = new EncapsulatedPacket();
+                const pk = new ACK.EncapsulatedPacket();
                 pk.splitId = splitId;
                 pk.hasSplit = true;
                 pk.splitCount = splitCount;
@@ -220,7 +220,7 @@ class Connection {
         }
     }
 
-    private addToQueue(packet: EncapsulatedPacket, immediate: boolean = false) {
+    private addToQueue(packet: ACK.EncapsulatedPacket, immediate: boolean = false) {
         const length = this.packetQueue.packets.length;
         if ((length + packet.getStream().length) > (this.mtuSize - 36)) {
             this.sendPacketQueue();
@@ -237,8 +237,8 @@ class Connection {
         }
     }
 
-    private sendPing(reliability: Reliability = Reliability.Unreliable) {
-        const packet = new ConnectedPing(null, this.server.getTime());
+    private sendPing(reliability: ACK.Reliability = ACK.Reliability.Unreliable) {
+        const packet = new ACK.ConnectedPing(null, this.server.getTime());
         packet.reliability = reliability;
 
         this.queueEncapsulatedPacket(packet, true);
@@ -292,7 +292,7 @@ class Connection {
     private handleConnectionRequest(packet: ConnectionRequest) {
         this.id = packet.clientId;
 
-        const reply = new ConnectionRequestAccepted(this.address, packet.sendPingTime, this.server.getTime());
+        const reply = new ACK.ConnectionRequestAccepted(this.address, packet.sendPingTime, this.server.getTime());
         reply.reliability = Reliability.Unreliable;
         reply.orderChannel = 0;
         this.queueEncapsulatedPacket(reply, true);
@@ -306,7 +306,7 @@ class Connection {
     }
 
     private handleConnectedPing(packet: ConnectedPing) {
-        const pong = new ConnectedPong(null, packet.sendPingTime, this.server.getTime());
+        const pong = new ACK.ConnectedPong(null, packet.sendPingTime, this.server.getTime());
         pong.reliability = Reliability.Unreliable;
 
         this.queueEncapsulatedPacket(pong);
@@ -349,6 +349,7 @@ class Connection {
     private handleLogin(packet: Login) {
         this.logger.debug('Got login. Username:', packet.username);
 
+        
         this.player.username = this.player.displayName = packet.username;
         this.player.clientUUID = packet.clientUUID;
         this.player.xuid = packet.xuid;

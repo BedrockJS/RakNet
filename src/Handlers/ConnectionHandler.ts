@@ -1,14 +1,27 @@
-import Packet from "../packets/Packet";
+import Packet from "../protocol/Packet";
 import Connection from '../Utils/Connection';
-import { Address } from '../Types';
+import Address from '../Types';
+import Server from '@/Server';
 
 class ConnectionHandler {
     private connections: Connection[];
     private packetPool: Map<Number, Packet>;
+    private server: Server;
 
-    constructor () {
+    constructor (server: Server) {
         this.connections = [];
         this.packetPool = new Map();
+        this.server = server;
+    }
+
+    addConnection(client: Address, mtuSize: number): Boolean {
+        if (this.hasConnection(client)) {
+            return false;
+        } else {
+            const connection = new Connection(client, mtuSize, this, this.server);
+            this.connections.push(connection);
+            return true;   
+        }
     }
 
     hasConnection(client: Address): Boolean {
